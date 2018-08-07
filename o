@@ -1,4 +1,13 @@
 #!/bin/bash
+#
+# Generic script to open (for viewing) or editing
+# any file type, based on my program preferences
+#
+# make a link to anything else than o (like e) to
+# enable the editing
+#
+# email: Vasilis.Vlachoudis@cern.ch
+# date: sometime in 2014
 
 # Find the first file argument or so we hope
 fn=
