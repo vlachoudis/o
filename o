@@ -1,0 +1,172 @@
+#!/bin/bash
+
+# Find the first file argument or so we hope
+fn=
+ext=txt
+# skip options and find the first file
+for i in `seq 1 $#`;do
+	eval "arg=\${$i}"
+	if [ ${arg:0:1} != '-' ]; then
+		fn=`basename "$arg"`
+		ext="${fn##*.}"
+		break
+	fi
+done
+
+# Check for browser page
+if [[ "$arg" =~ ^http://* ]] || [[ "$arg" =~ ^https://* ]]; then
+	#firefox --new-window "$arg"
+	xdg-open "$arg"
+	exit
+fi
+
+if [ -d "$arg" ]; then
+	if [ -x /usr/bin/dolphin ]; then
+		dolphin "$arg"
+	else
+		thunar "$arg"
+	fi
+
+fi
+
+# Convert to lower case
+ext=${ext,,}
+
+# First assign editing program
+case $ext in
+	doc|docx|odt|rtf|sdt)
+		CMD=libreoffice
+		;;
+
+	csv|odc|ods|sdc|xls|xlsx)
+		CMD=libreoffice
+		;;
+
+	odi|odp|ppt|pptx|sdi)
+		CMD=libreoffice
+		;;
+
+	blend)
+		CMD=blender
+		;;
+
+	dvi)
+		CMD=xdvi
+		;;
+
+	dxf)
+		#CMD=librecad
+		#CMD=/home/bnv/git/LibreCAD/unix/librecad
+		#if [ ! -x $CMD ]; then
+			CMD=librecad
+		#fi
+		;;
+
+	flair|inp)
+		CMD=flair
+		;;
+
+	mid)
+		CMD=timidity
+		;;
+
+	msh)
+		CMD=/opt/gmsh/bin/gmsh
+		;;
+
+	odg)
+		CMD=lodraw
+		;;
+
+	pdf)
+		CMD=lodraw
+		#CMD=pdfedit
+		;;
+
+	plt)
+		CMD=hpglview
+		;;
+
+	stp|step|fcstd|igs)
+		if [ -f /usr/bin/FreeCAD ]; then
+			CMD=FreeCAD
+		else
+			CMD=freecad
+		fi
+		;;
+
+	svg|eps|ps)
+		CMD=inkscape
+		;;
+
+	stl)
+		CMD=meshlab
+		;;
+
+	xcf|png|jpg|jpeg|gif|bmp|xpm|ppm|tga|tif|tiff|xbm|ico)
+		CMD=gimp
+		;;
+
+	ngc|nc|tap|gcode)
+		CMD=$HOME/prg/CNC/bCNC/bCNC
+		;;
+
+	scad)
+		CMD=openscad
+		;;
+
+	skp)
+		CMD=wine C:\\Program\ Files\ \(x86\)\\Google\\Google\ SketchUp\ 8\\SketchUp.exe
+		;;
+
+	*)
+		CMD=gvim
+		;;
+esac
+
+# Second check for viewing program, if a viewer only exists
+if [ `basename $0` = o ]; then
+	case $ext in
+		avi|m4v|mkv|mov|mp4|mpeg|mpg|mpg|wmv|3gp)
+			CMD=vlc
+			;;
+
+		bmp|gif|jpg|jpeg|png|ppm|tga|tif|ico)
+			CMD=gpicview
+			;;
+
+		gp|gnu)
+			CMD="gnuplot -persist"
+			;;
+
+		htm|html)
+			#CMD=firefox
+			CMD=xdg-open
+			;;
+
+		mp3)
+			CMD=mplayer
+			;;
+
+		eps|ps)
+			CMD=gv
+			;;
+
+		pdf)
+			CMD=evince
+			;;
+
+		xbm|xpm)
+			CMD=display
+			;;
+		*)
+			if [ "$CMD" = gvim ]; then
+				CMD="uxterm -e less"
+			fi
+			;;
+	esac
+fi
+
+# Execute the command respecting the quotes on the arguments
+${CMD} "${@/:/ +}"
+#LC_ALL=C LC_PAPER=a4 ${CMD} "${@/:/ +}"
